@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#526b57">
+<meta name="description" content="りょうことしょうまの共同生活費を記録して、毎月の折半を簡単に精算する家計簿">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>ふたりの家計簿</title>
+<style>
+:root{--green:#526b57;--pale:#eaf0e8;--ink:#243128;--muted:#718076;--line:#dce4dc;--bg:#f5f7f4;--white:#fff;--red:#a54848}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif;padding-bottom:30px}
+header{background:var(--green);color:white;padding:18px 16px 20px;position:sticky;top:0;z-index:5;box-shadow:0 2px 8px #0001}
+.headrow{display:flex;justify-content:space-between;align-items:center;gap:10px}.brand{font-size:19px;font-weight:800}.sub{font-size:11px;opacity:.8;margin-top:3px}
+main{max-width:760px;margin:auto;padding:14px;display:grid;gap:13px}
+.card{background:white;border:1px solid var(--line);border-radius:16px;padding:15px;box-shadow:0 2px 8px #24312808}
+.monthbar{display:flex;align-items:center;justify-content:space-between;gap:10px}.monthbar strong{font-size:18px}
+button,.btn{border:0;border-radius:10px;padding:10px 13px;font:inherit;font-size:14px;background:var(--pale);color:var(--ink);cursor:pointer}
+button.primary{background:var(--green);color:white;font-weight:700}.danger{color:var(--red);background:#faeeee}
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:9px}.metric{background:var(--pale);border-radius:12px;padding:12px}.metric small{display:block;color:var(--muted);font-size:11px}.metric b{display:block;font-size:21px;margin-top:3px;overflow-wrap:anywhere}
+.settle{background:#f0f4ed;border:1px solid #dce7d9;border-radius:13px;padding:13px}.settle .big{font-size:25px;font-weight:850;margin:4px 0}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.tabs button{font-size:13px;padding:10px 4px}.tabs button.active{background:var(--green);color:white}
+.view{display:none}.view.active{display:block}
+.week,.calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}.week div{text-align:center;font-size:11px;color:var(--muted);padding:5px 0}
+.day{min-height:68px;border:1px solid var(--line);border-radius:9px;background:white;padding:5px 2px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;min-width:0}
+.day.today{border:2px solid var(--green)}.day.selected{background:var(--pale);border-color:var(--green)}.day .amt{font-size:9px;font-weight:800;overflow-wrap:anywhere;max-width:100%}.day .dot{width:5px;height:5px;border-radius:50%;background:var(--green)}
+label{font-size:12px;color:var(--muted);display:block;margin:0 0 5px}input,select{width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;background:white;color:var(--ink);font:inherit;min-width:0}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.field{min-width:0}.full{grid-column:1/-1}
+h2{font-size:16px;margin:0 0 12px}.muted{color:var(--muted);font-size:12px}
+.entry{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px 0;border-bottom:1px solid var(--line)}.entry:last-child{border:0}.entry b{font-size:14px}.entry small{display:block;color:var(--muted);font-size:11px;margin-top:3px}.entry .right{text-align:right;white-space:nowrap}.entry .actions{display:flex;gap:5px;justify-content:flex-end;margin-top:5px}.entry .actions button{font-size:11px;padding:5px 8px}
+.row{display:flex;gap:8px;align-items:center}.row>*{flex:1}.sectionhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.pill{font-size:11px;border-radius:20px;background:var(--pale);padding:4px 8px;color:var(--green)}
+.actionsgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.actionsgrid button{font-size:13px}
+footer{text-align:center;color:var(--muted);font-size:11px;padding:8px 15px}
+@media(max-width:380px){.day{min-height:59px}.day .amt{font-size:8px}.metric b{font-size:18px}}
+@media print{body{background:white}header,.tabs,.no-print,#calendarView,#entryForm,#settingsView,#listView,.monthbar button,footer{display:none!important}main{padding:0;display:block}.card{box-shadow:none;border:0}.print-only{display:block!important}}
+.print-only{display:none}
+</style>
+</head>
+<body>
+<header><div class="headrow"><div><div class="brand">🏠 ふたりの家計簿</div><div class="sub">りょうこ ＆ しょうま · 共同生活費の折半</div></div><span class="pill" style="background:#ffffff22;color:white">50 : 50</span></div></header>
+<main>
+<section class="card">
+ <div class="monthbar"><button id="prev">‹ 前月</button><strong id="monthTitle"></strong><button id="next">次月 ›</button></div>
+ <div class="metrics" style="margin-top:13px">
+  <div class="metric"><small>今月の共同支出</small><b id="total">¥0</b></div>
+  <div class="metric"><small>1人あたりの負担額</small><b id="half">¥0</b></div>
+ </div>
+ <div class="settle" style="margin-top:10px">
+  <div class="muted">月末の精算</div><div class="big" id="settlement">精算なし</div><div id="settlementText" style="font-size:13px">2人の支払額は均等です</div>
+ </div>
+ <div class="metrics" style="margin-top:10px">
+  <div><small class="muted">りょうこの支払額</small><b id="paidR">¥0</b></div>
+  <div><small class="muted">しょうまの支払額</small><b id="paidS">¥0</b></div>
+ </div>
+</section>
+<nav class="tabs no-print"><button class="active" data-view="calendarView">📅 カレンダー</button><button data-view="listView">📋 支出一覧</button><button data-view="settingsView">⚙ 設定</button></nav>
+<section id="calendarView" class="view active">
+ <div class="card"><div class="sectionhead"><h2>支出カレンダー</h2><span class="muted">日付をタップ</span></div>
+  <div class="week"><div>日</div><div>月</div><div>火</div><div>水</div><div>木</div><div>金</div><div>土</div></div><div class="calendar" id="calendar"></div>
+ </div>
+ <div class="card"><h2 id="selectedDate">選択日の支出</h2><div id="dayEntries" class="muted">支出はありません</div></div>
+</section>
+<section id="listView" class="view"><div class="card"><div class="sectionhead"><h2>今月の支出一覧</h2><span id="count" class="muted"></span></div><div id="entries"></div></div></section>
+<section id="settingsView" class="view">
+ <div class="card"><h2>🔁 固定費の登録</h2><p class="muted">登録すると毎月自動でカレンダーと集計に反映されます。実際の支払者を選んでね。</p>
+  <div class="formgrid">
+   <div class="field"><label>項目</label><select id="fixedCat"></select></div>
+   <div class="field"><label>金額（円）</label><input id="fixedAmount" type="number" min="1" placeholder="例：80000"></div>
+   <div class="field"><label>支払者</label><select id="fixedPayer"><option value="0">りょうこ</option><option value="1">しょうま</option></select></div>
+   <div class="field"><label>毎月の支払日</label><input id="fixedDay" type="number" min="1" max="31" value="27"></div>
+  </div><button class="primary" id="addFixed" style="width:100%;margin-top:12px">＋ 固定費を登録</button><div id="fixedList" style="margin-top:10px"></div>
+ </div>
+ <div class="card"><h2>項目の管理</h2><div class="row"><input id="newCat" placeholder="新しい項目名"><button id="addCat" class="primary" style="flex:0 0 auto">追加</button></div><div id="categoryList" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px"></div></div>
+ <div class="card"><h2>データのバックアップ</h2><p class="muted">端末変更やブラウザデータ消去に備えて、定期的にバックアップを保存してください。</p><div class="actionsgrid"><button id="backup">バックアップ保存</button><button id="restore">バックアップ読込</button><input id="backupFile" type="file" accept=".json" hidden></div></div>
+</section>
+<section class="card no-print" id="entryForm">
+ <h2>＋ 共同費用を記録</h2>
+ <div class="formgrid">
+  <div class="field"><label>日付</label><input id="date" type="date"></div>
+  <div class="field"><label>金額（円）</label><input id="amount" type="number" min="1" inputmode="numeric" placeholder="例：3500"></div>
+  <div class="field"><label>支払者</label><select id="payer"><option value="0">りょうこ</option><option value="1">しょうま</option></select></div>
+  <div class="field"><label>項目</label><select id="category"></select></div>
+  <div class="field full"><label>メモ（任意）</label><input id="memo" placeholder="例：スーパーで食材購入"></div>
+ </div>
+ <button class="primary" id="saveEntry" style="width:100%;margin-top:12px">支出を登録する</button><button id="cancelEdit" style="width:100%;margin-top:6px;display:none">編集をキャンセル</button>
+</section>
+<section class="card no-print"><h2>📤 月間集計を出力</h2><p class="muted">今表示している月の集計を保存できます。</p><div class="actionsgrid"><button class="primary" id="pdf">PDFを作成</button><button class="primary" id="image">画像を保存</button></div></section>
+<section class="card print-only" id="printSummary"></section>
+<footer>共同生活費だけを記録 · りょうこ ＆ しょうま</footer>
+</main>
+<script>
+(()=>{
+const $=id=>document.getElementById(id), today=new Date();
+const defaults=['家賃','食費','日用品','光熱費','水道代','通信費','駐車場','その他'];
+let db={expenses:[],fixed:[],categories:defaults};
+try{const x=JSON.parse(localStorage.getItem('futariKakeibo'));if(x&&Array.isArray(x.expenses)&&Array.isArray(x.fixed)&&Array.isArray(x.categories))db=x}catch(e){}
+let month=new Date(today.getFullYear(),today.getMonth(),1),selected=fmt(today),editing=null;
+const fmt=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const ym=()=>fmt(month).slice(0,7), yen=n=>'¥'+Math.round(n).toLocaleString('ja-JP');
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const save=()=>localStorage.setItem('futariKakeibo',JSON.stringify(db));
+const person=i=>i===0?'りょうこ':'しょうま';
+const monthRows=()=>{
+ let rows=db.expenses.filter(e=>e.date.startsWith(ym())).map(e=>({...e,fixed:false}));
+ db.fixed.forEach(f=>{let last=new Date(month.getFullYear(),month.getMonth()+1,0).getDate();let d=`${ym()}-${String(Math.min(f.day,last)).padStart(2,'0')}`;rows.push({...f,date:d,id:'fixed-'+f.id,memo:'毎月自動反映',fixed:true})});
+ return rows.sort((a,b)=>a.date.localeCompare(b.date));
+};
+const dateLabel=s=>{let [y,m,d]=s.split('-');return `${Number(m)}/${Number(d)}`};
+function render(){
+ let rows=monthRows(),r=rows.filter(e=>Number(e.payer)===0).reduce((s,e)=>s+Number(e.amount),0),sh=rows.filter(e=>Number(e.payer)===1).reduce((s,e)=>s+Number(e.amount),0),total=r+sh,diff=(r-sh)/2;
+ $('monthTitle').textContent=`${month.getFullYear()}年 ${month.getMonth()+1}月`;
+ $('total').textContent=yen(total);$('half').textContent=yen(total/2);$('paidR').textContent=yen(r);$('paidS').textContent=yen(sh);
+ $('settlement').textContent=Math.abs(diff)<.5?'精算なし':yen(Math.abs(diff));
+ $('settlementText').textContent=Math.abs(diff)<.5?'2人の負担額は均等です':diff>0?'しょうま → りょうこ に支払う':'りょうこ → しょうま に支払う';
+ const first=new Date(month.getFullYear(),month.getMonth(),1).getDay(),days=new Date(month.getFullYear(),month.getMonth()+1,0).getDate(),sums={};
+ rows.forEach(e=>sums[e.date]=(sums[e.date]||0)+Number(e.amount));
+ let cal='';for(let i=0;i<first;i++)cal+='<div></div>';
+ for(let d=1;d<=days;d++){let key=`${ym()}-${String(d).padStart(2,'0')}`,amt=sums[key]||0;cal+=`<button class="day ${key===selected?'selected':''} ${key===fmt(today)?'today':''}" data-day="${key}"><span>${d}</span>${amt?`<span class="amt">${yen(amt)}</span><i class="dot"></i>`:'<span class="muted">－</span>'}</button>`}
+ $('calendar').innerHTML=cal;renderDay();$('count').textContent=rows.length+'件';
+ $('entries').innerHTML=rows.length?rows.map(entryHTML).join(''):'<p class="muted">この月の支出はありません。</p>';
+ $('fixedList').innerHTML=db.fixed.length?db.fixed.map(f=>`<div class="entry"><div><b>${esc(f.category)}</b><small>${person(Number(f.payer))} · 毎月${f.day}日</small></div><div class="right"><b>${yen(f.amount)}</b><div class="actions"><button data-fdel="${esc(f.id)}">解除</button></div></div></div>`).join(''):'<p class="muted">固定費は未登録です。</p>';
+ $('categoryList').innerHTML=db.categories.map(c=>`<span class="pill">${esc(c)}</span>`).join('');
+ updatePrint();
+}
+function entryHTML(e){return `<div class="entry"><div><b>${esc(e.category)} ${e.fixed?'<span class="pill">固定費</span>':''}</b><small>${dateLabel(e.date)} · ${person(Number(e.payer))}${e.memo&&!e.fixed?' · '+esc(e.memo):''}</small></div><div class="right"><b>${yen(e.amount)}</b>${e.fixed?'<small>自動反映</small>':`<div class="actions"><button data-edit="${esc(e.id)}">編集</button><button data-del="${esc(e.id)}">削除</button></div>`}</div></div>`}
+function renderDay(){let rows=monthRows().filter(e=>e.date===selected);$('selectedDate').textContent=dateLabel(selected)+' の支出';$('dayEntries').innerHTML=rows.length?rows.map(entryHTML).join(''):'<span class="muted">支出はありません</span>'}
+function updatePrint(){
+ let rows=monthRows(),r=rows.filter(e=>+e.payer===0).reduce((s,e)=>s+ +e.amount,0),sh=rows.filter(e=>+e.payer===1).reduce((s,e)=>s+ +e.amount,0),diff=(r-sh)/2;
+ $('printSummary').innerHTML=`<h1>ふたりの家計簿｜${month.getFullYear()}年${month.getMonth()+1}月</h1><p>りょうこ ＆ しょうま　共同生活費の月間集計</p><h2>合計支出：${yen(r+sh)}</h2><p>りょうこの支払額：${yen(r)}</p><p>しょうまの支払額：${yen(sh)}</p><p>1人あたりの負担額：${yen((r+sh)/2)}</p><h2>精算：${Math.abs(diff)<.5?'精算なし':yen(Math.abs(diff))}</h2><p>${Math.abs(diff)<.5?'2人の負担額は均等です':diff>0?'しょうまからりょうこへ支払い':'りょうこからしょうまへ支払い'}</p><hr><h3>支出明細</h3>${rows.map(e=>`<p>${dateLabel(e.date)}　${esc(e.category)}　${person(+e.payer)}　${yen(e.amount)}${e.fixed?'（固定費）':''}</p>`).join('')||'<p>支出なし</p>'}`;
+}
+function refreshSelects(){let opts=db.categories.map(c=>`<option>${esc(c)}</option>`).join('');$('category').innerHTML=opts;$('fixedCat').innerHTML=opts}
+function tab(id){document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===id));document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active',b.dataset.view===id));$('entryForm').style.display=id==='settingsView'?'none':'block'}
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>tab(b.dataset.view));
+$('prev').onclick=()=>{month=new Date(month.getFullYear(),month.getMonth()-1,1);selected=fmt(month);render()};
+$('next').onclick=()=>{month=new Date(month.getFullYear(),month.getMonth()+1,1);selected=fmt(month);render()};
+$('calendar').onclick=e=>{let b=e.target.closest('[data-day]');if(b){selected=b.dataset.day;renderDay();document.querySelectorAll('.day').forEach(x=>x.classList.toggle('selected',x.dataset.day===selected))}};
+$('saveEntry').onclick=()=>{
+ let date=$('date').value,amount=Number($('amount').value),category=$('category').value,payer=Number($('payer').value);
+ if(!date||!Number.isFinite(amount)||amount<=0||!category){alert('日付・金額・項目を正しく入力してください');return}
+ let obj={id:editing??Date.now()+'-'+Math.random().toString(36).slice(2),date,amount,category,payer,memo:$('memo').value};
+ if(editing!==null)db.expenses=db.expenses.map(e=>String(e.id)===String(editing)?obj:e);else db.expenses.push(obj);
+ editing=null;save();$('amount').value='';$('memo').value='';$('saveEntry').textContent='支出を登録する';$('cancelEdit').style.display='none';month=new Date(date+'T12:00:00');month.setDate(1);selected=date;render();tab('calendarView');
+};
+$('cancelEdit').onclick=()=>{editing=null;$('amount').value='';$('memo').value='';$('saveEntry').textContent='支出を登録する';$('cancelEdit').style.display='none'};
+document.addEventListener('click',e=>{
+ let b=e.target.closest('button');if(!b)return;
+ if(b.dataset.del){if(confirm('この支出を削除しますか？')){db.expenses=db.expenses.filter(x=>String(x.id)!==b.dataset.del);save();render()}}
+ if(b.dataset.edit){let x=db.expenses.find(x=>String(x.id)===b.dataset.edit);if(!x)return;editing=x.id;$('date').value=x.date;$('amount').value=x.amount;$('payer').value=x.payer;$('category').value=x.category;$('memo').value=x.memo||'';$('saveEntry').textContent='変更を保存する';$('cancelEdit').style.display='block';$('entryForm').scrollIntoView({behavior:'smooth'})}
+ if(b.dataset.fdel){if(confirm('この固定費の自動反映を解除しますか？')){db.fixed=db.fixed.filter(x=>String(x.id)!==b.dataset.fdel);save();render()}}
+});
+$('addFixed').onclick=()=>{let amount=Number($('fixedAmount').value),day=Number($('fixedDay').value);if(!amount||amount<=0||!Number.isInteger(day)||day<1||day>31){alert('金額と支払日を正しく入力してください');return}db.fixed.push({id:Date.now()+'-'+Math.random().toString(36).slice(2),amount,day,category:$('fixedCat').value,payer:Number($('fixedPayer').value)});save();$('fixedAmount').value='';render();alert('固定費を登録しました。今月の集計にも反映されます。')};
+$('addCat').onclick=()=>{let c=$('newCat').value.trim();if(!c||db.categories.includes(c))return;db.categories.push(c);$('newCat').value='';refreshSelects();save();render()};
+$('backup').onclick=()=>download('futari-kakeibo-backup.json',JSON.stringify(db,null,2),'application/json');
+$('restore').onclick=()=>$('backupFile').click();
+$('backupFile').onchange=async e=>{try{let d=JSON.parse(await e.target.files[0].text());if(!Array.isArray(d.expenses)||!Array.isArray(d.fixed)||!Array.isArray(d.categories))throw 0;db=d;save();refreshSelects();render();alert('バックアップを読み込みました')}catch(_){alert('バックアップファイルを読み込めませんでした')}e.target.value=''};
+function download(name,content,type){let a=document.createElement('a'),u=URL.createObjectURL(new Blob([content],{type}));a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
+$('pdf').onclick=()=>{updatePrint();window.print()};
+$('image').onclick=()=>{
+ let rows=monthRows(),r=rows.filter(e=>+e.payer===0).reduce((s,e)=>s+ +e.amount,0),sh=rows.filter(e=>+e.payer===1).reduce((s,e)=>s+ +e.amount,0),diff=(r-sh)/2;
+ let c=document.createElement('canvas');c.width=1200;c.height=Math.max(850,440+rows.length*48);let x=c.getContext('2d');
+ x.fillStyle='#f5f7f4';x.fillRect(0,0,c.width,c.height);x.fillStyle='#526b57';x.fillRect(0,0,c.width,150);
+ x.fillStyle='white';x.font='bold 46px sans-serif';x.fillText('ふたりの家計簿',60,70);x.font='26px sans-serif';x.fillText(`${month.getFullYear()}年 ${month.getMonth()+1}月｜りょうこ ＆ しょうま`,60,115);
+ x.fillStyle='#243128';x.font='bold 34px sans-serif';x.fillText(`共同支出合計　${yen(r+sh)}`,60,220);
+ x.font='28px sans-serif';x.fillText(`りょうこの支払額　${yen(r)}`,60,290);x.fillText(`しょうまの支払額　${yen(sh)}`,620,290);
+ x.fillText(`1人あたり　${yen((r+sh)/2)}`,60,355);x.font='bold 32px sans-serif';x.fillText(`精算：${Math.abs(diff)<.5?'精算なし':yen(Math.abs(diff))}`,620,355);
+ x.font='23px sans-serif';x.fillStyle='#526b57';x.fillText(Math.abs(diff)<.5?'2人の負担額は均等です':diff>0?'しょうま → りょうこ に支払い':'りょうこ → しょうま に支払い',620,405);
+ x.fillStyle='#243128';x.font='bold 25px sans-serif';x.fillText('支出明細',60,470);
+ let y=520;x.font='22px sans-serif';rows.forEach(e=>{x.fillStyle='#243128';x.fillText(`${dateLabel(e.date)}　${e.category}${e.fixed?'（固定）':''}　${person(+e.payer)}`,60,y);x.textAlign='right';x.fillText(yen(e.amount),1130,y);x.textAlign='left';x.strokeStyle='#dce4dc';x.beginPath();x.moveTo(60,y+12);x.lineTo(1140,y+12);x.stroke();y+=48});
+ c.toBlob(blob=>{let u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=`家計簿_${ym()}.png`;a.click();setTimeout(()=>URL.revokeObjectURL(u),1500)},'image/png');
+};
+refreshSelects();$('date').value=fmt(today);render();
+if('serviceWorker' in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
+})();
+</script>
+</body></html>
