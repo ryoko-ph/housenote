@@ -4,8 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#526b57">
+<link rel="manifest" href="./manifest.webmanifest">
 <meta name="description" content="りょうことしょうまの共同生活費を記録して、毎月の折半を簡単に精算する家計簿">
-<link rel="manifest" href="manifest.webmanifest">
+
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>ふたりの家計簿</title>
 <style>
@@ -16,7 +17,7 @@ header{background:var(--green);color:white;padding:18px 16px 20px;position:stick
 main{max-width:760px;margin:auto;padding:14px;display:grid;gap:13px}
 .card{background:white;border:1px solid var(--line);border-radius:16px;padding:15px;box-shadow:0 2px 8px #24312808}
 .monthbar{display:flex;align-items:center;justify-content:space-between;gap:10px}.monthbar strong{font-size:18px}
-button,.btn{border:0;border-radius:10px;padding:10px 13px;font:inherit;font-size:14px;background:var(--pale);color:var(--ink);cursor:pointer}
+button,.btn{touch-action:manipulation;-webkit-tap-highlight-color:transparent;border:0;border-radius:10px;padding:10px 13px;font:inherit;font-size:14px;background:var(--pale);color:var(--ink);cursor:pointer}
 button.primary{background:var(--green);color:white;font-weight:700}.danger{color:var(--red);background:#faeeee}
 .metrics{display:grid;grid-template-columns:1fr 1fr;gap:9px}.metric{background:var(--pale);border-radius:12px;padding:12px}.metric small{display:block;color:var(--muted);font-size:11px}.metric b{display:block;font-size:21px;margin-top:3px;overflow-wrap:anywhere}
 .settle{background:#f0f4ed;border:1px solid #dce7d9;border-radius:13px;padding:13px}.settle .big{font-size:25px;font-weight:850;margin:4px 0}
@@ -42,7 +43,7 @@ footer{text-align:center;color:var(--muted);font-size:11px;padding:8px 15px}
 <header><div class="headrow"><div><div class="brand">🏠 ふたりの家計簿</div><div class="sub">りょうこ ＆ しょうま · 共同生活費の折半</div></div><span class="pill" style="background:#ffffff22;color:white">50 : 50</span></div></header>
 <main>
 <section class="card">
- <div class="monthbar"><button id="prev">‹ 前月</button><strong id="monthTitle"></strong><button id="next">次月 ›</button></div>
+ <div class="monthbar"><button type="button" id="prev">‹ 前月</button><strong id="monthTitle"></strong><button type="button" id="next">次月 ›</button></div>
  <div class="metrics" style="margin-top:13px">
   <div class="metric"><small>今月の共同支出</small><b id="total">¥0</b></div>
   <div class="metric"><small>1人あたりの負担額</small><b id="half">¥0</b></div>
@@ -55,7 +56,7 @@ footer{text-align:center;color:var(--muted);font-size:11px;padding:8px 15px}
   <div><small class="muted">しょうまの支払額</small><b id="paidS">¥0</b></div>
  </div>
 </section>
-<nav class="tabs no-print"><button class="active" data-view="calendarView">📅 カレンダー</button><button data-view="listView">📋 支出一覧</button><button data-view="settingsView">⚙ 設定</button></nav>
+<nav class="tabs no-print"><button type="button" class="active" data-view="calendarView">📅 カレンダー</button><button type="button" data-view="listView">📋 支出一覧</button><button type="button" data-view="settingsView">⚙ 設定</button></nav>
 <section id="calendarView" class="view active">
  <div class="card"><div class="sectionhead"><h2>支出カレンダー</h2><span class="muted">日付をタップ</span></div>
   <div class="week"><div>日</div><div>月</div><div>火</div><div>水</div><div>木</div><div>金</div><div>土</div></div><div class="calendar" id="calendar"></div>
@@ -70,10 +71,10 @@ footer{text-align:center;color:var(--muted);font-size:11px;padding:8px 15px}
    <div class="field"><label>金額（円）</label><input id="fixedAmount" type="number" min="1" placeholder="例：80000"></div>
    <div class="field"><label>支払者</label><select id="fixedPayer"><option value="0">りょうこ</option><option value="1">しょうま</option></select></div>
    <div class="field"><label>毎月の支払日</label><input id="fixedDay" type="number" min="1" max="31" value="27"></div>
-  </div><button class="primary" id="addFixed" style="width:100%;margin-top:12px">＋ 固定費を登録</button><div id="fixedList" style="margin-top:10px"></div>
+  </div><button type="button" class="primary" id="addFixed" style="width:100%;margin-top:12px">＋ 固定費を登録</button><div id="fixedList" style="margin-top:10px"></div>
  </div>
- <div class="card"><h2>項目の管理</h2><div class="row"><input id="newCat" placeholder="新しい項目名"><button id="addCat" class="primary" style="flex:0 0 auto">追加</button></div><div id="categoryList" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px"></div></div>
- <div class="card"><h2>データのバックアップ</h2><p class="muted">端末変更やブラウザデータ消去に備えて、定期的にバックアップを保存してください。</p><div class="actionsgrid"><button id="backup">バックアップ保存</button><button id="restore">バックアップ読込</button><input id="backupFile" type="file" accept=".json" hidden></div></div>
+ <div class="card"><h2>項目の管理</h2><div class="row"><input id="newCat" placeholder="新しい項目名"><button type="button" id="addCat" class="primary" style="flex:0 0 auto">追加</button></div><div id="categoryList" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px"></div></div>
+ <div class="card"><h2>データのバックアップ</h2><p class="muted">端末変更やブラウザデータ消去に備えて、定期的にバックアップを保存してください。</p><div class="actionsgrid"><button type="button" id="backup">バックアップ保存</button><button type="button" id="restore">バックアップ読込</button><input id="backupFile" type="file" accept=".json" hidden></div></div>
 </section>
 <section class="card no-print" id="entryForm">
  <h2>＋ 共同費用を記録</h2>
@@ -84,23 +85,26 @@ footer{text-align:center;color:var(--muted);font-size:11px;padding:8px 15px}
   <div class="field"><label>項目</label><select id="category"></select></div>
   <div class="field full"><label>メモ（任意）</label><input id="memo" placeholder="例：スーパーで食材購入"></div>
  </div>
- <button class="primary" id="saveEntry" style="width:100%;margin-top:12px">支出を登録する</button><button id="cancelEdit" style="width:100%;margin-top:6px;display:none">編集をキャンセル</button>
+ <button type="button" class="primary" id="saveEntry" style="width:100%;margin-top:12px">支出を登録する</button><button type="button" id="cancelEdit" style="width:100%;margin-top:6px;display:none">編集をキャンセル</button>
 </section>
-<section class="card no-print"><h2>📤 月間集計を出力</h2><p class="muted">今表示している月の集計を保存できます。</p><div class="actionsgrid"><button class="primary" id="pdf">PDFを作成</button><button class="primary" id="image">画像を保存</button></div></section>
+<section class="card no-print"><h2>📤 月間集計を出力</h2><p class="muted">今表示している月の集計を保存できます。</p><div class="actionsgrid"><button type="button" class="primary" id="pdf">PDFを作成</button><button type="button" class="primary" id="image">画像を保存</button></div></section>
 <section class="card print-only" id="printSummary"></section>
-<footer>共同生活費だけを記録 · りょうこ ＆ しょうま</footer>
+<footer>共同生活費だけを記録 · りょうこ ＆ しょうま<br>ボタンが反応しない場合は、ファイルをChromeで開いてください。</footer>
 </main>
 <script>
 (()=>{
 const $=id=>document.getElementById(id), today=new Date();
+window.addEventListener('error',e=>showError('画面の処理でエラーが発生しました：'+(e.message||'不明なエラー')));
+window.addEventListener('unhandledrejection',e=>showError('処理に失敗しました：'+String(e.reason||'不明なエラー')));
 const defaults=['家賃','食費','日用品','光熱費','水道代','通信費','駐車場','その他'];
 let db={expenses:[],fixed:[],categories:defaults};
-try{const x=JSON.parse(localStorage.getItem('futariKakeibo'));if(x&&Array.isArray(x.expenses)&&Array.isArray(x.fixed)&&Array.isArray(x.categories))db=x}catch(e){}
-let month=new Date(today.getFullYear(),today.getMonth(),1),selected=fmt(today),editing=null;
+try{const x=JSON.parse(window.localStorage.getItem('futariKakeibo'));if(x&&Array.isArray(x.expenses)&&Array.isArray(x.fixed)&&Array.isArray(x.categories))db=x}catch(e){/* localStorage unavailable until user opens in a supported browser context */}
 const fmt=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+let month=new Date(today.getFullYear(),today.getMonth(),1),selected=fmt(today),editing=null;
 const ym=()=>fmt(month).slice(0,7), yen=n=>'¥'+Math.round(n).toLocaleString('ja-JP');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const save=()=>localStorage.setItem('futariKakeibo',JSON.stringify(db));
+const save=()=>{try{localStorage.setItem('futariKakeibo',JSON.stringify(db));return true}catch(err){showError('この開き方ではブラウザ内保存が使えません。Chromeで直接開き直してください。');return false}};
+function showError(message){let el=$('appError');if(!el){el=document.createElement('div');el.id='appError';el.style.cssText='position:sticky;top:0;z-index:99;background:#fff0d8;color:#7a3d00;padding:12px;margin:8px;border:1px solid #e5bd80;border-radius:10px;font-size:13px';document.body.prepend(el)}el.textContent=message}
 const person=i=>i===0?'りょうこ':'しょうま';
 const monthRows=()=>{
  let rows=db.expenses.filter(e=>e.date.startsWith(ym())).map(e=>({...e,fixed:false}));
@@ -117,14 +121,14 @@ function render(){
  const first=new Date(month.getFullYear(),month.getMonth(),1).getDay(),days=new Date(month.getFullYear(),month.getMonth()+1,0).getDate(),sums={};
  rows.forEach(e=>sums[e.date]=(sums[e.date]||0)+Number(e.amount));
  let cal='';for(let i=0;i<first;i++)cal+='<div></div>';
- for(let d=1;d<=days;d++){let key=`${ym()}-${String(d).padStart(2,'0')}`,amt=sums[key]||0;cal+=`<button class="day ${key===selected?'selected':''} ${key===fmt(today)?'today':''}" data-day="${key}"><span>${d}</span>${amt?`<span class="amt">${yen(amt)}</span><i class="dot"></i>`:'<span class="muted">－</span>'}</button>`}
+ for(let d=1;d<=days;d++){let key=`${ym()}-${String(d).padStart(2,'0')}`,amt=sums[key]||0;cal+=`<button type="button" class="day ${key===selected?'selected':''} ${key===fmt(today)?'today':''}" data-day="${key}"><span>${d}</span>${amt?`<span class="amt">${yen(amt)}</span><i class="dot"></i>`:'<span class="muted">－</span>'}</button>`}
  $('calendar').innerHTML=cal;renderDay();$('count').textContent=rows.length+'件';
  $('entries').innerHTML=rows.length?rows.map(entryHTML).join(''):'<p class="muted">この月の支出はありません。</p>';
- $('fixedList').innerHTML=db.fixed.length?db.fixed.map(f=>`<div class="entry"><div><b>${esc(f.category)}</b><small>${person(Number(f.payer))} · 毎月${f.day}日</small></div><div class="right"><b>${yen(f.amount)}</b><div class="actions"><button data-fdel="${esc(f.id)}">解除</button></div></div></div>`).join(''):'<p class="muted">固定費は未登録です。</p>';
+ $('fixedList').innerHTML=db.fixed.length?db.fixed.map(f=>`<div class="entry"><div><b>${esc(f.category)}</b><small>${person(Number(f.payer))} · 毎月${f.day}日</small></div><div class="right"><b>${yen(f.amount)}</b><div class="actions"><button type="button" data-fdel="${esc(f.id)}">解除</button></div></div></div>`).join(''):'<p class="muted">固定費は未登録です。</p>';
  $('categoryList').innerHTML=db.categories.map(c=>`<span class="pill">${esc(c)}</span>`).join('');
  updatePrint();
 }
-function entryHTML(e){return `<div class="entry"><div><b>${esc(e.category)} ${e.fixed?'<span class="pill">固定費</span>':''}</b><small>${dateLabel(e.date)} · ${person(Number(e.payer))}${e.memo&&!e.fixed?' · '+esc(e.memo):''}</small></div><div class="right"><b>${yen(e.amount)}</b>${e.fixed?'<small>自動反映</small>':`<div class="actions"><button data-edit="${esc(e.id)}">編集</button><button data-del="${esc(e.id)}">削除</button></div>`}</div></div>`}
+function entryHTML(e){return `<div class="entry"><div><b>${esc(e.category)} ${e.fixed?'<span class="pill">固定費</span>':''}</b><small>${dateLabel(e.date)} · ${person(Number(e.payer))}${e.memo&&!e.fixed?' · '+esc(e.memo):''}</small></div><div class="right"><b>${yen(e.amount)}</b>${e.fixed?'<small>自動反映</small>':`<div class="actions"><button type="button" data-edit="${esc(e.id)}">編集</button><button type="button" data-del="${esc(e.id)}">削除</button></div>`}</div></div>`}
 function renderDay(){let rows=monthRows().filter(e=>e.date===selected);$('selectedDate').textContent=dateLabel(selected)+' の支出';$('dayEntries').innerHTML=rows.length?rows.map(entryHTML).join(''):'<span class="muted">支出はありません</span>'}
 function updatePrint(){
  let rows=monthRows(),r=rows.filter(e=>+e.payer===0).reduce((s,e)=>s+ +e.amount,0),sh=rows.filter(e=>+e.payer===1).reduce((s,e)=>s+ +e.amount,0),diff=(r-sh)/2;
@@ -171,7 +175,15 @@ $('image').onclick=()=>{
  c.toBlob(blob=>{let u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=`家計簿_${ym()}.png`;a.click();setTimeout(()=>URL.revokeObjectURL(u),1500)},'image/png');
 };
 refreshSelects();$('date').value=fmt(today);render();
-if('serviceWorker' in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
+
 })();
+</script>
+
+<script>
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(err => console.warn('Service worker registration failed:', err));
+  });
+}
 </script>
 </body></html>
